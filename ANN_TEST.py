@@ -11,15 +11,15 @@ import numpy as np
 class ANN:
     def __init__(self, ni, nh, no, minn, maxx):
         self.ni = ni + 1
-        self.nh = nh
+        self.nh = nh + 1
         self.no = no
 
         self.ai = np.ones(self.ni)
         self.ah = np.ones(self.nh)
         self.ao = np.ones(self.no)
 
-        self.wi = np.random.random((self.ni, self.nh)) * 2 - 1
-        self.wo = np.random.random((self.nh, self.no)) * 2 - 1
+        self.wi = np.random.random((self.ni, self.nh)) * 0.1 - 0.05
+        self.wo = np.random.random((self.nh, self.no)) * 0.1 - 0.05
 
         self.ci = np.zeros((self.ni, self.nh))
         self.co = np.zeros((self.nh, self.no))
@@ -37,7 +37,6 @@ class ANN:
         self.ah = 1.0 / (1.0 + np.exp(-temp))
         temp = (np.tile(self.ah,(self.no, 1)) * self.wo.transpose()).sum(1)
         self.ao = 1.0 / (1.0 + np.exp(-temp))
-        return self.ao
 
     def backPropagate(self, targets, N, M):
         targets = np.array(targets).flatten()
@@ -58,7 +57,7 @@ class ANN:
         error = error + 0.5 * (targets - self.ao) ** 2
         return error
 
-    def trainAnn(self, dataSet, iterators, N, M = 0.1):
+    def trainAnn(self, dataSet, iterators = 100, N = 0.9, M = 0.05):
         # N for learning rate
         # M for momentum factor
         for i in xrange(iterators):
@@ -68,6 +67,7 @@ class ANN:
                 error = error + self.backPropagate(dataSet['target'][j], N, M)
             if i % 10 == 0:
                 print i,error
+            N = N * 0.95
 
     def test(self, testSet):
         #fp = open('/home/bayron/Downloads/res_temp.csv', 'w')
@@ -82,13 +82,14 @@ class ANN:
         print 'error: ', error
 
 def test():
-    rate = [0.2,0.3,0.4,0.5,0.6,0.7,0.8]
-    mont = [0.01,0.05, 0.1,0.2,0.3,0.4]
-    for i in range(len(rate)):
+    #rate = [0.2,0.3,0.4,0.5,0.6,0.7,0.8]
+    #mont = [0.01,0.05, 0.1,0.2,0.3,0.4]
+    #num =  [10, 100, 150, 200, 250, 300, 380]
+    #for i in range(len(num)):
         fileN = open('/home/bayron/Downloads/train_temp.csv')
         fileN.readline()
         rawData = fileN.read().split()
-        np.random.shuffle(rawData)
+        #np.random.shuffle(rawData)
         dataSet = {'feature':[], 'target':[]}
         dataSet['feature'] = np.array([item.split(',')[1:-1] for item in rawData]).astype(np.float)
         dataSet['target']  = np.array([item.split(',')[-1:] for item in rawData]).astype(np.float)
@@ -101,11 +102,12 @@ def test():
         testSet['target']  = dataSet['target'][-200:]
         minn = trainSet['target'].min()
         maxx = trainSet['target'].max()
+
         trainSet['target']  = (trainSet['target'] - minn) / ((maxx - minn) * 1.0)
         nf = trainSet['feature'].shape[1]
         nt = trainSet['target'].shape[1]
-        nn = ANN(nf,100,nt, minn, maxx)
-        nn.trainAnn(trainSet,60,rate[i])
+        nn = ANN(nf,10,nt, minn, maxx)
+        nn.trainAnn(trainSet)
         #fp = open('/home/bayron/Downloads/test_temp.csv')
         #fp.readline()
         #testSet = {'feature':[]}
