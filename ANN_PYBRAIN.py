@@ -62,7 +62,7 @@ class ANN:
         fp = open('/home/bayron/Downloads/res_temp.csv', 'w')
         fp.write('Id,reference')
         for j in xrange(testSet.shape[0]):
-            output = self.net.activate(testSet[j])
+            output = self.net.activate(testSet[j])[0]
             fp.write('\n' + str(j) + ',' + str((self.maxx - self.minn) * output + self.minn))
         fp.close()
 
